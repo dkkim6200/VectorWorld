@@ -49,6 +49,18 @@ public class Vector3 {
 		return z;
 	}
 	
+	public void setX(double x) {
+		this.x = x;
+	}
+	
+	public void setY(double y) {
+		this.y = y;
+	}
+	
+	public void setZ(double z) {
+		this.z = z;
+	}
+	
 	public Vector3 add(Vector3 vec) {
 		return new Vector3(x + vec.getX(), y + vec.getY(), z + vec.getZ());
 	}

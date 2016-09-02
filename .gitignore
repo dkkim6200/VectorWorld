@@ -2,3 +2,6 @@
 /.metadata
 /vector/bin
 /.recommenders
+/vector/.settings
+/vector/.classpath
+/vector/.project
