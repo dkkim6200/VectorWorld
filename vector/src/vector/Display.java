@@ -28,14 +28,17 @@ public class Display extends Canvas implements Runnable {
 	public static final int COLOR_RED = 0xE74C3C;
 	
 	public static final String TEAPOT_FILE_DIRECTORY = "/Users/DaekunKim/Documents/Programming Related/Eclipse Projects/VectorWorld/vector/assets/teapot";
+	public static final String TEACUP_FILE_DIRECTORY = "/Users/DaekunKim/Documents/Programming Related/Eclipse Projects/VectorWorld/vector/assets/teacup";
 	
-	private Vector3[] vertices;
-	private int[][] patches;
+	private Vector3[] teapotVertices;
+	private int[][] teapotPatches;
 	
-	private int numVertices;
-	private int numPatches;
+	private int numTeapotVertices;
+	private int numTeapotPatches;
 	
+	private double rotation;
 	private double scale;
+	private Vector3 translation;
 	
 	private int[][] pixels;
 	private boolean running;
@@ -54,29 +57,29 @@ public class Display extends Canvas implements Runnable {
 			String s;
 			
 			s = reader.readLine(); // Number of patches;
-			numPatches = Integer.parseInt(s);
-			patches = new int[numPatches][];
+			numTeapotPatches = Integer.parseInt(s);
+			teapotPatches = new int[numTeapotPatches][];
 			
-			for (int i = 0; i < numPatches; i++) {
+			for (int i = 0; i < numTeapotPatches; i++) {
 				s = reader.readLine();
 				
 				String[] patchIndexStrings = s.split(",");
 				
-				patches[i] = new int[patchIndexStrings.length];
+				teapotPatches[i] = new int[patchIndexStrings.length];
 				for (int j = 0; j < patchIndexStrings.length; j++) {
-					patches[i][j] = Integer.parseInt(patchIndexStrings[j]);
+					teapotPatches[i][j] = Integer.parseInt(patchIndexStrings[j]);
 				}
 			}
 			
 			s = reader.readLine(); // Number of vertices
-			numVertices = Integer.parseInt(s);
-			vertices = new Vector3[numVertices];
+			numTeapotVertices = Integer.parseInt(s);
+			teapotVertices = new Vector3[numTeapotVertices];
 			
-			for (int i = 0; i < numVertices; i++) {
+			for (int i = 0; i < numTeapotVertices; i++) {
 				s = reader.readLine();
 				
 				String[] vertexIndexStrings = s.split(",");
-				vertices[i] = new Vector3(Double.parseDouble(vertexIndexStrings[0]),
+				teapotVertices[i] = new Vector3(Double.parseDouble(vertexIndexStrings[0]),
 											Double.parseDouble(vertexIndexStrings[1]),
 											Double.parseDouble(vertexIndexStrings[2]));
 			}
@@ -85,13 +88,9 @@ public class Display extends Canvas implements Runnable {
 			e.printStackTrace();
 		}
 		
-		scale = 50;
-		
-		for (int i = 0; i < vertices.length; i++) {
-			vertices[i] = vertices[i].scalarMultiply(scale);
-		}
-		
-		scale = 0.9;
+		rotation = 0;
+		scale = 100;
+		translation = new Vector3(200, 200, 0);
 		
 		running = true;
 		thread = new Thread(this);
@@ -123,69 +122,104 @@ public class Display extends Canvas implements Runnable {
 	}
 	
 	public void update() {
-//		if (scale == 0.9 && vertices[0].getMagnitude() < 20) {
-//			scale = 1.1;
-//		}
-//		else if (scale == 1.1 && vertices[0].getMagnitude() > 200) {
-//			scale = 0.9;
-//		}
-//		
-//		drawVertex(new Vector3(200, 200, 0), vertices, patches);
-//		
-//		for (int i = 0; i < vertices.length; i++) {
-//			vertices[i] = vertices[i].scalarMultiply(scale);
-//		}
-//		
-//		for (int i = 0; i < vertices.length - 1; i++) {
-//			vertices[i].rotate(new Vector3(1, 0, 0), 45.0 / FPS);
-//		}
+		Vector3[] manipulatedVertices = new Vector3[teapotVertices.length];
 		
-//		for (int i = 0; i < 1; i++) {
-//			Vector3[] points = new Vector3[patches[i].length];
-//			for (int j = 0; j < patches[i].length; j++) {
-//				points[j] = vertices[patches[i][j] - 1];
-//			}
-//			
-//			for (double j = 0; j < 1.0; j+=1.0/1000) {
-//				Vector3 p = decasteljau(points, j);
-//				draw((int)p.x, (int)p.y, COLOR_BLACK);
-//			}
-//		}
-		
-		for (double j = 0; j < 1.0; j+=1.0/1000) {
-			Vector3 p = decasteljau(new Vector3[] {
-									new Vector3(100, 200, 0),
-									new Vector3(200, 100, 0),
-									new Vector3(300, 350, 0),
-									new Vector3(350, 0, 0),
-									new Vector3(450, 150, 0)
-									}, j);
-			draw((int)p.x, (int)p.y, COLOR_BLACK);
+		for (int i = 0; i < manipulatedVertices.length; i++) {
+			manipulatedVertices[i] = teapotVertices[i].scalarMultiply(scale);
+			manipulatedVertices[i].rotate(new Vector3(1, 1, 0), rotation);
+			manipulatedVertices[i] = manipulatedVertices[i].add(translation);
 		}
 		
-//		p4 = p4.add(new Vector3(1.0, 0, 0));
+		drawObject(manipulatedVertices, teapotPatches);
+		rotation += 90.0 / FPS;
 	}
 	
-	public Vector3[] bezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4) {
-		int numSegments = 100; 
+	/**
+	 * Draws 3D object from its vertices and Bezier patches.
+	 * 
+	 * <p>
+	 * Source
+	 * 1. https://www.scratchapixel.com/lessons/advanced-rendering/bezier-curve-rendering-utah-teapot/bezier-surface
+	 * </p>
+	 * @param objVertices 3D object's vertices
+	 * @param objPatches 3D object's bezier patches
+	 */
+	void drawObject(Vector3[] objVertices, int[][] objPatches) {
+		int divs = 16; // Must be >= 16
 		
-		Vector3[] points = new Vector3[numSegments + 1];
+		Vector3[] controlPoints = new Vector3[divs];
+		Vector3[] resultVertices = new Vector3[(divs + 1) * (divs + 1)];
+		int[][] vertexIndex = new int[divs * divs][4];
 		
-		for (int i = 0; i <= numSegments; ++i) { 
-			double t = i / (double)numSegments; 
-			// compute coefficients
-			double k1 = (1 - t) * (1 - t) * (1 - t); 
-			double k2 = 3 * (1 - t) * (1 - t) * t; 
-			double k3 = 3 * (1 - t) * t * t; 
-			double k4 = t * t * t; 
-			// weight the four control points using coefficients
-			points[i] = (p1.scalarMultiply(k1)).add(p2.scalarMultiply(k2)).add(p3.scalarMultiply(k3)).add(p4.scalarMultiply(k4)); 
+		for (int i = 0; i < objPatches.length; i++) { // numTeapotPatches
+			for (int j = 0; j < objPatches[i].length; j++) {
+				controlPoints[j] = objVertices[objPatches[i][j] - 1];
+			}
+			
+			for (int j = 0, k = 0; j < divs + 1; j++) {
+				for (int l = 0; l < divs + 1; l++, k++) {
+					resultVertices[k] = evalBezierPatch(controlPoints, l / (double)divs, j / (double)divs); 
+				}
+			}
+			
+			for (int j = 0, k = 0; j < divs; j++) {
+				for (int l = 0; l < divs; l++, k++) {
+					vertexIndex[k][0] = (divs + 1) * j + l; 
+					vertexIndex[k][1] = (divs + 1) * (j + 1) + l; 
+	                vertexIndex[k][2] = (divs + 1) * (j + 1) + l + 1; 
+	                vertexIndex[k][3] = (divs + 1) * j + l + 1; 
+				}
+			}
+			
+			for (int j = 0; j < vertexIndex.length; j++) {
+				for (int k = 0; k < vertexIndex[j].length - 1; k++) {
+					drawLine(resultVertices[vertexIndex[j][k]],
+							resultVertices[vertexIndex[j][k + 1]], COLOR_BLACK);
+				}
+			}
+		}
+	}
+	
+	Vector3 evalBezierPatch(Vector3[] controlPoints, double u, double v) { 
+	    Vector3[] uCurve = new Vector3[4];
+	    
+	    Vector3[] temp = new Vector3[4];
+	    for (int i = 0; i < 4; i++){
+	    	for (int j = 0; j < 4; j++) {
+	    		temp[j] = controlPoints[i * 4 + j];
+	    	}
+	    	
+	    	uCurve[i] = bezier(temp, u); 
+	    }
+	    
+	    return bezier(uCurve, v); 
+	}
+	
+	public Vector3 bezier(Vector3[] p, double t) {
+		// compute coefficients
+		double k1 = (1 - t) * (1 - t) * (1 - t); 
+		double k2 = 3 * (1 - t) * (1 - t) * t; 
+		double k3 = 3 * (1 - t) * t * t; 
+		double k4 = t * t * t;
+		
+		// weight the four control points using coefficients
+		return (p[0].scalarMultiply(k1))
+				.add(p[1].scalarMultiply(k2))
+				.add(p[2].scalarMultiply(k3))
+				.add(p[3].scalarMultiply(k4)); 
+	}
+	
+	public Vector3[] decasteljau(Vector3[] points, int numSegments) {
+		Vector3[] result = new Vector3[numSegments + 1];
+		
+		for (int i = 0; i < numSegments + 1; i++) {
+			result[i] = decasteljauRec(points, (double)i / numSegments);
 		}
 		
-		return points;
+		return result;
 	}
 	
-	Vector3 decasteljau(Vector3[] points, double t) {
+	public Vector3 decasteljauRec(Vector3[] points, double t) {
 		if (points.length == 1) {
 			return points[0];
 		}
@@ -200,8 +234,8 @@ public class Display extends Canvas implements Runnable {
 				pointsEnd[i-1] = points[i];
 			} 
 			
-			Vector3 result1 = decasteljau(pointsPrev, t);
-			Vector3 result2 = decasteljau(pointsEnd, t);
+			Vector3 result1 = decasteljauRec(pointsPrev, t);
+			Vector3 result2 = decasteljauRec(pointsEnd, t);
 			
 			return result1.scalarMultiply((1 - t)).add(result2.scalarMultiply(t));
 		}
@@ -259,6 +293,10 @@ public class Display extends Canvas implements Runnable {
 				draw(x, y, color);
 			}
 		}
+	}
+	
+	public void drawLine(Vector3 p1, Vector3 p2, int color) {
+		drawVector(p1, p2.subtract(p1), color);
 	}
 	
 	public void draw(int x, int y, int color) {
