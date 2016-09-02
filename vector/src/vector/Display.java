@@ -392,6 +392,8 @@ public class Display extends Canvas implements Runnable {
 			utahTeapotData[i] = new Vector3(data[i][0], data[i][1], data[i][2]).scalarMultiply(scale);
 		}
 		
+		scale = 0.9;
+		
 		thread = new Thread(this);
 		thread.start();
 	}
@@ -421,10 +423,17 @@ public class Display extends Canvas implements Runnable {
 	}
 	
 	public void update() {
+		if (scale == 0.9 && utahTeapotData[0].getMagnitude() < 20) {
+			scale = 1.1;
+		}
+		else if (scale == 1.1 && utahTeapotData[0].getMagnitude() > 200) {
+			scale = 0.9;
+		}
+		
 		drawVertex(new Vector3(200, 200, 0), utahTeapotData, patches);
 		
 		for (int i = 0; i < utahTeapotData.length; i++) {
-			utahTeapotData[i].scalarMultiply(0.5); // WHY THE HELL IS THIS NOT WORKINGGGGGGGG
+			utahTeapotData[i] = utahTeapotData[i].scalarMultiply(scale);
 		}
 		
 		for (int i = 0; i < utahTeapotData.length - 1; i++) {
