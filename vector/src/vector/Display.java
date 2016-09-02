@@ -42,6 +42,7 @@ public class Display extends Canvas implements Runnable {
 	
 	private Thread thread;
 	
+	
 	public Display() {
 		pixels = new int[WIDTH][HEIGHT];
 		clear();
@@ -122,21 +123,87 @@ public class Display extends Canvas implements Runnable {
 	}
 	
 	public void update() {
-		if (scale == 0.9 && vertices[0].getMagnitude() < 20) {
-			scale = 1.1;
-		}
-		else if (scale == 1.1 && vertices[0].getMagnitude() > 200) {
-			scale = 0.9;
+//		if (scale == 0.9 && vertices[0].getMagnitude() < 20) {
+//			scale = 1.1;
+//		}
+//		else if (scale == 1.1 && vertices[0].getMagnitude() > 200) {
+//			scale = 0.9;
+//		}
+//		
+//		drawVertex(new Vector3(200, 200, 0), vertices, patches);
+//		
+//		for (int i = 0; i < vertices.length; i++) {
+//			vertices[i] = vertices[i].scalarMultiply(scale);
+//		}
+//		
+//		for (int i = 0; i < vertices.length - 1; i++) {
+//			vertices[i].rotate(new Vector3(1, 0, 0), 45.0 / FPS);
+//		}
+		
+//		for (int i = 0; i < 1; i++) {
+//			Vector3[] points = new Vector3[patches[i].length];
+//			for (int j = 0; j < patches[i].length; j++) {
+//				points[j] = vertices[patches[i][j] - 1];
+//			}
+//			
+//			for (double j = 0; j < 1.0; j+=1.0/1000) {
+//				Vector3 p = decasteljau(points, j);
+//				draw((int)p.x, (int)p.y, COLOR_BLACK);
+//			}
+//		}
+		
+		for (double j = 0; j < 1.0; j+=1.0/1000) {
+			Vector3 p = decasteljau(new Vector3[] {
+									new Vector3(100, 200, 0),
+									new Vector3(200, 100, 0),
+									new Vector3(300, 350, 0),
+									new Vector3(350, 0, 0),
+									new Vector3(450, 150, 0)
+									}, j);
+			draw((int)p.x, (int)p.y, COLOR_BLACK);
 		}
 		
-		drawVertex(new Vector3(200, 200, 0), vertices, patches);
+//		p4 = p4.add(new Vector3(1.0, 0, 0));
+	}
+	
+	public Vector3[] bezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4) {
+		int numSegments = 100; 
 		
-		for (int i = 0; i < vertices.length; i++) {
-			vertices[i] = vertices[i].scalarMultiply(scale);
+		Vector3[] points = new Vector3[numSegments + 1];
+		
+		for (int i = 0; i <= numSegments; ++i) { 
+			double t = i / (double)numSegments; 
+			// compute coefficients
+			double k1 = (1 - t) * (1 - t) * (1 - t); 
+			double k2 = 3 * (1 - t) * (1 - t) * t; 
+			double k3 = 3 * (1 - t) * t * t; 
+			double k4 = t * t * t; 
+			// weight the four control points using coefficients
+			points[i] = (p1.scalarMultiply(k1)).add(p2.scalarMultiply(k2)).add(p3.scalarMultiply(k3)).add(p4.scalarMultiply(k4)); 
 		}
 		
-		for (int i = 0; i < vertices.length - 1; i++) {
-			vertices[i].rotate(new Vector3(1, 0, 0), 45.0 / FPS);
+		return points;
+	}
+	
+	Vector3 decasteljau(Vector3[] points, double t) {
+		if (points.length == 1) {
+			return points[0];
+		}
+		else {
+			Vector3[] pointsPrev = new Vector3[points.length - 1];
+			for (int i = 0; i < points.length - 1; i++) {
+				pointsPrev[i] = points[i];
+			}
+			
+			Vector3[] pointsEnd = new Vector3[points.length - 1];
+			for (int i = 1; i < points.length; i++) {
+				pointsEnd[i-1] = points[i];
+			} 
+			
+			Vector3 result1 = decasteljau(pointsPrev, t);
+			Vector3 result2 = decasteljau(pointsEnd, t);
+			
+			return result1.scalarMultiply((1 - t)).add(result2.scalarMultiply(t));
 		}
 	}
 	
@@ -151,6 +218,19 @@ public class Display extends Canvas implements Runnable {
 		}
 	}
 	
+	/**
+	 * Draws vector on the screen.
+	 * 
+	 * <p>
+	 * The formula is same as below:
+	 * r = offset + (0 ~ 1)vec
+	 * </p>
+	 * 
+	 * @param offset Position vector that the vector will be drawn from
+	 * @param vec Direction vector(?) to be drawn
+	 * @param color HTML color value
+	 * @return No return value
+	 */
 	public void drawVector(Vector3 offset, Vector3 vec, int color) {
 		if (vec.getX() >= 0) {
 			for (int x = (int) offset.getX(); x < (int) (offset.getX() + vec.getX()); x++) {
