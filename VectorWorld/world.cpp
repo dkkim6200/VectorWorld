@@ -2,7 +2,7 @@
 
 World::World() {
     ifstream teapotFile;
-    teapotFile.open("/Users/DaekunKim/Documents/Programming Related/Xcode Projects/VectorWorld/VectorWorld/assets/teapot");
+    teapotFile.open("/Users/DaekunKim/Documents/Programming Related/VectorWorld/VectorWorld/assets/teapot");
     
     string s;
     getline(teapotFile, s);

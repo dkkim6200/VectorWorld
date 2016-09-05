@@ -53,8 +53,8 @@
 		833660B41D7CE482005D4C4B /* display.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = display.h; sourceTree = "<group>"; };
 		833660B61D7CE55E005D4C4B /* world.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = world.cpp; sourceTree = "<group>"; };
 		833660B71D7CE55E005D4C4B /* world.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = world.h; sourceTree = "<group>"; };
-		833660BA1D7CE72B005D4C4B /* teacup */ = {isa = PBXFileReference; lastKnownFileType = text; path = teacup; sourceTree = "<group>"; };
-		833660BB1D7CE72B005D4C4B /* teapot */ = {isa = PBXFileReference; lastKnownFileType = text; path = teapot; sourceTree = "<group>"; };
+		833660BD1D7CFEC8005D4C4B /* teacup */ = {isa = PBXFileReference; lastKnownFileType = text; path = teacup; sourceTree = "<group>"; };
+		833660BE1D7CFEC8005D4C4B /* teapot */ = {isa = PBXFileReference; lastKnownFileType = text; path = teapot; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,16 +109,16 @@
 				833660B01D7CE1CF005D4C4B /* mesh.cpp */,
 				833660B71D7CE55E005D4C4B /* world.h */,
 				833660B61D7CE55E005D4C4B /* world.cpp */,
-				833660B91D7CE72B005D4C4B /* assets */,
+				833660BC1D7CFEC8005D4C4B /* assets */,
 			);
 			path = VectorWorld;
 			sourceTree = "<group>";
 		};
-		833660B91D7CE72B005D4C4B /* assets */ = {
+		833660BC1D7CFEC8005D4C4B /* assets */ = {
 			isa = PBXGroup;
 			children = (
-				833660BA1D7CE72B005D4C4B /* teacup */,
-				833660BB1D7CE72B005D4C4B /* teapot */,
+				833660BD1D7CFEC8005D4C4B /* teacup */,
+				833660BE1D7CFEC8005D4C4B /* teapot */,
 			);
 			path = assets;
 			sourceTree = "<group>";
@@ -315,6 +315,7 @@
 				833660971D7BBC5C005D4C4B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
