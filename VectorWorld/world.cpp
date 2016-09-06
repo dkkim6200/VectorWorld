@@ -51,8 +51,8 @@ World::World() {
     
     rotation = 0;
     rotationAxis = Vector3(1, 1, 1);
-    scale = 100;
-    translation = Vector3(200, 200, 0);
+    scale = 50;
+    translation = Vector3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0);
 }
 
 World::~World() {
@@ -69,12 +69,33 @@ void World::update(Renderer *renderer) {
         manipulatedVertices[i] = manipulatedVertices[i] + translation;
     }
     
-    Mesh resultMesh = Mesh(teapotMesh->getNumVertices(), manipulatedVertices, teapotMesh->getNumPatches(), teapotPatches);
+    int **manipulatedPatches = new int*[teapotMesh->getNumPatches()];
     
-    renderer->renderMesh(&resultMesh);
+    for (int i = 0; i < teapotMesh->getNumPatches(); i++) {
+        manipulatedPatches[i] = new int[NUM_VERTICES_PER_PATCH];
+        for (int j = 0; j < NUM_VERTICES_PER_PATCH; j++) {
+            manipulatedPatches[i][j] = teapotPatches[i][j];
+        }
+    }
+    
+    Mesh *resultMesh = new Mesh(teapotMesh->getNumVertices(), manipulatedVertices, teapotMesh->getNumPatches(), manipulatedPatches);
+    
+    renderer->renderMesh(resultMesh);
     rotation += 90.0 * Time::deltaTime;
 
 //    scale += 0.1;
     
-    delete [] manipulatedVertices;
+    manipulatedVertices = NULL;
+    manipulatedPatches = NULL;
+    
+    delete resultMesh;
+    
+//    Vector3 vertices[4];
+//    
+//    vertices[0] = Vector3(100, 100, 0);
+//    vertices[1] = Vector3(200, 100, 0);
+//    vertices[2] = Vector3(200, 200, 0);
+//    vertices[3] = Vector3(100, 200, 0);
+//    
+//    renderer->renderPolygon(vertices, 4, 100, 200);
 }

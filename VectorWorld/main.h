@@ -18,8 +18,8 @@ using namespace std;
 #include "world.h"
 #include "display.h"
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+#define SCREEN_WIDTH 500
+#define SCREEN_HEIGHT 500
 #define COLOR_CHANNELS 3
 
 #define COLOR_WHITE 0xFFFFFF

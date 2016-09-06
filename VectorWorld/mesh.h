@@ -11,6 +11,7 @@ public:
     
     Mesh();
     Mesh(int numVertices, Vector3 *vertices, int numPatches, int **patches);
+    ~Mesh();
     
     int getNumVertices();
     int getNumPatches();

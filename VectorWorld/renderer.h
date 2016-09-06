@@ -2,6 +2,9 @@
 #define RENDERER_H
 
 class Renderer {
+private:
+    bool isPointOnLine(Vector3 p, Vector3 p1, Vector3 p2);
+    
 public:
     int width;
     int height;
@@ -83,6 +86,12 @@ public:
      * @param objPatches 3D object's bezier patches
      */
     void renderMesh(Mesh *mesh);
+    
+    /**
+     * TODO: render filled polygon
+     *
+     */
+    void renderPolygon(Vector3 *vertices, int numVertices, int yMin, int yMax);
 };
 
 #endif

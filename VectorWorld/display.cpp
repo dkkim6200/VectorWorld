@@ -17,6 +17,8 @@ void Display::update() {
     
     Time::deltaTime = std::chrono::duration_cast<std::chrono::duration<double>>(currentTime - previousTime).count();
     
+    cout << 1.0 / Time::deltaTime << " FPS" << endl;
+    
     renderer->clear();
     world->update(renderer);
 }

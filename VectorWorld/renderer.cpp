@@ -21,13 +21,13 @@ void Renderer::clear() {
         }
     }
     
-    for (int i = 0; i < width / GRID_SIZE; i++) {
-        renderVector(Vector3(i * GRID_SIZE, 0, 0), Vector3(0, width, 0), COLOR_GREEN);
-    }
-    
-    for (int i = 0; i < height / GRID_SIZE; i++) {
-        renderVector(Vector3(0, i * GRID_SIZE, 0), Vector3(width, 0, 0), COLOR_GREEN);
-    }
+//    for (int i = 0; i < width / GRID_SIZE; i++) {
+//        renderVector(Vector3(i * GRID_SIZE, 0, 0), Vector3(0, width, 0), COLOR_GREEN);
+//    }
+//    
+//    for (int i = 0; i < height / GRID_SIZE; i++) {
+//        renderVector(Vector3(0, i * GRID_SIZE, 0), Vector3(width, 0, 0), COLOR_GREEN);
+//    }
 }
 
 void Renderer::plot(int x, int y, int color) {
@@ -42,13 +42,13 @@ void Renderer::plot(int x, int y, int color) {
 void Renderer::renderVector(Vector3 offset, Vector3 vec, int color) {
     if (vec.x >= 0) {
         for (int x = (int) offset.x; x < (int) (offset.x + vec.x); x++) {
-            int y = (int) (offset.y + vec.y * (x - offset.x) / vec.x);
+            int y = (int) (vec.y / vec.x * (x - offset.x) + offset.y);
             
             plot(x, y, color);
         }
     } else {
         for (int x = (int) (offset.x + vec.x); x < (int) offset.x; x++) {
-            int y = (int) (offset.y + vec.y * (x - offset.x) / vec.x);
+            int y = (int) (vec.y / vec.x * (x - offset.x) + offset.y);
             
             plot(x, y, color);
         }
@@ -56,13 +56,13 @@ void Renderer::renderVector(Vector3 offset, Vector3 vec, int color) {
     
     if (vec.y >= 0) {
         for (int y = (int) offset.y; y < (int) (offset.y + vec.y); y++) {
-            int x = (int) (offset.x + vec.x * (y - offset.y) / vec.y);
+            int x = (int) (vec.x / vec.y * (y - offset.y) + offset.x);
             
             plot(x, y, color);
         }
     } else {
         for (int y = (int) (offset.y + vec.y); y < (int) offset.y; y++) {
-            int x = (int) (offset.x + vec.x * (y - offset.y) / vec.y);
+            int x = (int) (vec.x / vec.y * (y - offset.y) + offset.x);
             
             plot(x, y, color);
         }
@@ -122,13 +122,72 @@ void Renderer::renderMesh(Mesh *mesh) {
         }
         
         for (int j = 0; j < divs * divs; j++) { // divs * divs is the length of vertexIndex
-            for (int k = 0; k < 4 - 1; k++) { // 4 is the length of vertexIndex[j]
-                renderLine(resultVertices[vertexIndex[j][k]],
-                           resultVertices[vertexIndex[j][k + 1]], COLOR_BLACK);
+//            for (int k = 0; k < 4 - 1; k++) { // 4 is the length of vertexIndex[j]
+//                renderLine(resultVertices[vertexIndex[j][k]],
+//                           resultVertices[vertexIndex[j][k + 1]], COLOR_BLACK);
+//            }
+            
+            Vector3 *vertices = new Vector3[4];
+            
+            int yMax = resultVertices[vertexIndex[j][0]].y;
+            double yMin = resultVertices[vertexIndex[j][0]].y;
+            
+            for (int k = 0; k < 4; k++) { // 4 is the length of vertexIndex[j]
+                vertices[k] = resultVertices[vertexIndex[j][k]];
+                
+                if (resultVertices[vertexIndex[j][k]].y > yMax) {
+                    yMax = resultVertices[vertexIndex[j][k]].y;
+                }
+                else if (resultVertices[vertexIndex[j][k]].y < yMin) {
+                    yMin = resultVertices[vertexIndex[j][k]].y;
+                }
             }
+            
+            renderPolygon(vertices, 4, yMin, yMax);
+            
+            delete [] vertices;
         }
     }
     
     delete [] controlPoints;
     delete [] resultVertices;
+}
+
+void Renderer::renderPolygon(Vector3 *vertices, int numVertices, int yMin, int yMax) {
+    for (int y = yMin + 1; y < yMax; y++) {
+        bool isInPolygon = false;
+        
+        for (int x = 0; x < SCREEN_WIDTH; x++) {
+            for (int i = 0; i < numVertices; i++) {
+                if (isPointOnLine(Vector3(x, y, 0), vertices[i], vertices[(i + 1) % numVertices])) {
+                    isInPolygon = !isInPolygon;
+                }
+            }
+            
+            if (isInPolygon) {
+                plot(x, y, COLOR_GREEN);
+            }
+        }
+    }
+}
+
+bool Renderer::isPointOnLine(Vector3 p, Vector3 p1, Vector3 p2) {
+    Vector3 dirVec = p2 - p1;
+    Vector3 pVec = p - p1;
+    
+    if (((dirVec.x == 0 && pVec.x == 0 && dirVec.y * pVec.y > 0) ||
+        (dirVec.y == 0 && pVec.y == 0 && dirVec.x * pVec.x > 0)) &&
+        pVec.getMagnitude() < dirVec.getMagnitude()) { // pVec and dirVec are vectors with vertical direction
+        return true;
+    }
+    else if (dirVec.x * pVec.x < 0 || dirVec.y * pVec.y < 0 ||
+             pVec.getMagnitude() > dirVec.getMagnitude()) { // pVec is in same direction as dirVec, but not rlly ON dirVec tho, since it is OPPOSITE direction
+        return false;
+    }
+    else if (dirVec.x / pVec.x == dirVec.y / pVec.y) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
