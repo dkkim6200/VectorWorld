@@ -53,6 +53,12 @@ World::World() {
     rotationAxis = Vector3(1, 1, 1);
     scale = 50;
     translation = Vector3(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0);
+    
+    
+    vertices[0] = Vector3(100, 100, 0);
+    vertices[1] = Vector3(200, 100, 0);
+    vertices[2] = Vector3(200, 200, 0);
+    vertices[3] = Vector3(100, 200, 0);
 }
 
 World::~World() {
@@ -89,13 +95,4 @@ void World::update(Renderer *renderer) {
     manipulatedPatches = NULL;
     
     delete resultMesh;
-    
-//    Vector3 vertices[4];
-//    
-//    vertices[0] = Vector3(100, 100, 0);
-//    vertices[1] = Vector3(200, 100, 0);
-//    vertices[2] = Vector3(200, 200, 0);
-//    vertices[3] = Vector3(100, 200, 0);
-//    
-//    renderer->renderPolygon(vertices, 4, 100, 200);
 }

@@ -122,12 +122,12 @@ void Renderer::renderMesh(Mesh *mesh) {
         }
         
         for (int j = 0; j < divs * divs; j++) { // divs * divs is the length of vertexIndex
-//            for (int k = 0; k < 4 - 1; k++) { // 4 is the length of vertexIndex[j]
-//                renderLine(resultVertices[vertexIndex[j][k]],
-//                           resultVertices[vertexIndex[j][k + 1]], COLOR_BLACK);
-//            }
+            for (int k = 0; k < 4 - 1; k++) { // 4 is the length of vertexIndex[j]
+                renderLine(resultVertices[vertexIndex[j][k]],
+                           resultVertices[vertexIndex[j][k + 1]], COLOR_BLACK);
+            }
             
-            Vector3 *vertices = new Vector3[4];
+            Vector3 vertices[4];
             
             int yMax = resultVertices[vertexIndex[j][0]].y;
             double yMin = resultVertices[vertexIndex[j][0]].y;
@@ -144,8 +144,6 @@ void Renderer::renderMesh(Mesh *mesh) {
             }
             
             renderPolygon(vertices, 4, yMin, yMax);
-            
-            delete [] vertices;
         }
     }
     
@@ -155,39 +153,25 @@ void Renderer::renderMesh(Mesh *mesh) {
 
 void Renderer::renderPolygon(Vector3 *vertices, int numVertices, int yMin, int yMax) {
     for (int y = yMin + 1; y < yMax; y++) {
-        bool isInPolygon = false;
-        
         for (int x = 0; x < SCREEN_WIDTH; x++) {
-            for (int i = 0; i < numVertices; i++) {
-                if (isPointOnLine(Vector3(x, y, 0), vertices[i], vertices[(i + 1) % numVertices])) {
-                    isInPolygon = !isInPolygon;
-                }
-            }
-            
-            if (isInPolygon) {
+            if (isPointInPolygon(Vector3(x, y, 0), vertices, numVertices)) {
                 plot(x, y, COLOR_GREEN);
             }
         }
     }
 }
 
-bool Renderer::isPointOnLine(Vector3 p, Vector3 p1, Vector3 p2) {
-    Vector3 dirVec = p2 - p1;
-    Vector3 pVec = p - p1;
+bool Renderer::isPointInPolygon(Vector3 p, Vector3 *vertices, int numVertices) {
+    bool result = false;
     
-    if (((dirVec.x == 0 && pVec.x == 0 && dirVec.y * pVec.y > 0) ||
-        (dirVec.y == 0 && pVec.y == 0 && dirVec.x * pVec.x > 0)) &&
-        pVec.getMagnitude() < dirVec.getMagnitude()) { // pVec and dirVec are vectors with vertical direction
-        return true;
+    int j = numVertices - 1;
+    for (int i = 0; i < numVertices; j = i++) {
+        if ((vertices[i].y > p.y) != (vertices[j].y > p.y) &&
+            (p.x < (vertices[j].x - vertices[i].x) * (p.y - vertices[i].y) / (vertices[j].y - vertices[i].y) + vertices[i].x)) {
+            
+            result = !result;
+        }
     }
-    else if (dirVec.x * pVec.x < 0 || dirVec.y * pVec.y < 0 ||
-             pVec.getMagnitude() > dirVec.getMagnitude()) { // pVec is in same direction as dirVec, but not rlly ON dirVec tho, since it is OPPOSITE direction
-        return false;
-    }
-    else if (dirVec.x / pVec.x == dirVec.y / pVec.y) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    
+    return result;
 }

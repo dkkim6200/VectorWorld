@@ -16,6 +16,8 @@ protected:
     double scale;
     Vector3 translation;
     
+    Vector3 vertices[4];
+    
 public:
     World();
     ~World();

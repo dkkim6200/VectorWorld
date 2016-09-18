@@ -3,7 +3,7 @@
 
 class Renderer {
 private:
-    bool isPointOnLine(Vector3 p, Vector3 p1, Vector3 p2);
+    bool isPointInPolygon(Vector3 p, Vector3 *vertices, int numVertices);
     
 public:
     int width;
